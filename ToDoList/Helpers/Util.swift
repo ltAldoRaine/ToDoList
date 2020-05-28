@@ -10,6 +10,21 @@ import UIKit
 
 class Util {
 
+    static func confirm(UIViewController: UIViewController, title: String, message: String, completion: (() -> Void)? = nil) {
+        DispatchQueue.main.async {
+            let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            let noAction = UIAlertAction(title: Variable.no, style: .cancel)
+            let yesAction = UIAlertAction(title: Variable.yes, style: .default) { _ in
+                DispatchQueue.main.async {
+                    completion?()
+                }
+            }
+            alertController.addAction(noAction)
+            alertController.addAction(yesAction)
+            UIViewController.present(alertController, animated: true)
+        }
+    }
+
     static func prompt(UIViewController: UIViewController, title: String, message: String, initialValue: String, keyboardType: UIKeyboardType? = .default, keyboardDelegate: UITextFieldDelegate? = nil, completion: ((_ value: String) -> Void)? = nil) {
         DispatchQueue.main.async {
             let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)

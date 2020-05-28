@@ -10,34 +10,35 @@ import UIKit
 
 class TasksTableViewController: UITableViewController {
 
+    private var taskViewModels = TaskViewModel.all() ?? [TaskViewModel]()
+    private var taskViewModelsGrouped: [Int: [TaskViewModel]] {
+        return [
+            0: taskViewModels.filter { $0.completedState == 0 },
+            1: taskViewModels.filter { $0.completedState == 1 },
+            2: taskViewModels.filter { $0.completedState == 2 }
+        ]
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        let imageView = UIImageView(image: Image.background)
-        imageView.contentMode = .scaleAspectFill
-        tableView.backgroundView = imageView
         tableView.register(TaskTableViewCell.nib, forCellReuseIdentifier: TaskTableViewCell.description)
         tableView.register(TasksTableViewHeaderView.nib, forHeaderFooterViewReuseIdentifier: TasksTableViewHeaderView.description)
     }
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 3
+        return taskViewModelsGrouped.count
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 3
+        return taskViewModelsGrouped[section]?.count ?? 0
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: TaskTableViewCell.description, for: indexPath) as! TaskTableViewCell
-        cell.taskContentLabel.text = "blabla"
-        cell.taskDateLabel.text = "11/03/2019 22:00:00"
+        let taskViewModel = taskViewModelsGrouped[indexPath.section]?[indexPath.row]
+        cell.taskContentLabel.text = taskViewModel?.content
+        cell.taskDateLabel.text = taskViewModel?.date?.toString(format: "yyyy-MM-dd HH:mm")
         return cell
-    }
-
-    @IBAction func onAddTaskBarButtonItemTapped() {
-        Util.prompt(UIViewController: self, title: "Add new task", message: "Please enter task content↴", initialValue: "") { value in
-
-        }
     }
 
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
@@ -52,49 +53,76 @@ class TasksTableViewController: UITableViewController {
         return headerView
     }
 
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        if taskViewModelsGrouped[section]?.isEmpty == true {
+            return .zero
+        }
+        return UITableView.automaticDimension
     }
-    */
 
-    /*
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
+    override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let modifyAction1 = UIContextualAction(style: .normal, title: "", handler: { (ac: UIContextualAction, view: UIView, success: (Bool) -> Void) in
+            Util.confirm(UIViewController: self, title: Variable.deleteTaskTitle, message: Variable.deleteTaskMessage) {
+                let taskViewModel = self.taskViewModelsGrouped[indexPath.section]?[indexPath.row]
+                taskViewModel?.delete(success: {
+                    self.taskViewModels.removeAll {$0.id == taskViewModel?.id}
+                    tableView.reloadData()
+                })
+            }
+            success(true)
+        })
+        modifyAction1.image = Image.trash
+        modifyAction1.backgroundColor = .white
+        var actions = [modifyAction1]
+        if indexPath.section == 0 {
+            let modifyAction2 = UIContextualAction(style: .normal, title: "", handler: { (ac: UIContextualAction, view: UIView, success: (Bool) -> Void) in
+                Util.confirm(UIViewController: self, title: Variable.startTaskTitle, message: Variable.startTaskMessage) {
+                    let taskViewModel = self.taskViewModelsGrouped[indexPath.section]?[indexPath.row]
+                    taskViewModel?.completedState = 1
+                    taskViewModel?.update(success: {
+                        tableView.reloadData()
+                    }, failure: {
+                            taskViewModel?.completedState = 0
+                        })
+                }
+                success(true)
+            })
+            modifyAction2.backgroundColor = .white
+            modifyAction2.image = Image.progress
+            actions.append(modifyAction2)
+        } else if indexPath.section == 1 {
+            let modifyAction3 = UIContextualAction(style: .normal, title: "", handler: { (ac: UIContextualAction, view: UIView, success: (Bool) -> Void) in
+                Util.confirm(UIViewController: self, title: Variable.finishTaskTitle, message: Variable.finishTaskMessage) {
+                    let taskViewModel = self.taskViewModelsGrouped[indexPath.section]?[indexPath.row]
+                    taskViewModel?.completedState = 2
+                    taskViewModel?.update(success: {
+                        tableView.reloadData()
+                    }, failure: {
+                            taskViewModel?.completedState = 1
+                        })
+                }
+                success(true)
+            })
+            modifyAction3.backgroundColor = .white
+            modifyAction3.image = Image.done
+            actions.append(modifyAction3)
+        }
+        let configuration = UISwipeActionsConfiguration(actions: actions)
+        configuration.performsFirstActionWithFullSwipe = false
+        return configuration
     }
-    */
 
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
+    @IBAction func onAddTaskBarButtonItemTapped() {
+        Util.prompt(UIViewController: self, title: Variable.addTaskTitle, message: Variable.addTaskMessage, initialValue: "") { value in
+            let taskViewModel = TaskViewModel(content: value)
+            taskViewModel.create(success: { taskViewModel in
+                if let taskViewModel = taskViewModel {
+                    self.taskViewModels.insert(taskViewModel, at: 0)
+                    self.tableView.reloadData()
+                    self.tableView.scrollToTop()
+                }
+            })
+        }
     }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }

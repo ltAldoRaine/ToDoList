@@ -10,4 +10,16 @@ import UIKit
 
 class Image {
 
+    static var trash: UIImage? {
+        return UIImage(named: "Trash")
+    }
+
+    static var done: UIImage? {
+        return UIImage(named: "Done")
+    }
+
+    static var progress: UIImage? {
+        return UIImage(named: "Progress")
+    }
+
 }
