@@ -20,6 +20,7 @@
 		3D400537247E8EB600A8752E /* Variable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D400536247E8EB600A8752E /* Variable.swift */; };
 		3D400539247E8F9000A8752E /* TasksTableViewHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D400538247E8F9000A8752E /* TasksTableViewHeaderView.swift */; };
 		3D40053B247E8FD900A8752E /* TasksTableViewHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3D40053A247E8FD900A8752E /* TasksTableViewHeaderView.xib */; };
+		3D89FBAC24869B3600C064E6 /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D89FBAB24869B3600C064E6 /* StringExtension.swift */; };
 		3D8E2B62247FB41200B4032B /* Util.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D8E2B61247FB41200B4032B /* Util.swift */; };
 		3D8E2B64247FBE3000B4032B /* TaskModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D8E2B63247FBE3000B4032B /* TaskModel.swift */; };
 		3D8E2B67247FC92F00B4032B /* UIApplicationExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D8E2B66247FC92F00B4032B /* UIApplicationExtension.swift */; };
@@ -46,6 +47,7 @@
 		3D400536247E8EB600A8752E /* Variable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Variable.swift; sourceTree = "<group>"; };
 		3D400538247E8F9000A8752E /* TasksTableViewHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasksTableViewHeaderView.swift; sourceTree = "<group>"; };
 		3D40053A247E8FD900A8752E /* TasksTableViewHeaderView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TasksTableViewHeaderView.xib; sourceTree = "<group>"; };
+		3D89FBAB24869B3600C064E6 /* StringExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtension.swift; sourceTree = "<group>"; };
 		3D8E2B61247FB41200B4032B /* Util.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Util.swift; sourceTree = "<group>"; };
 		3D8E2B63247FBE3000B4032B /* TaskModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskModel.swift; sourceTree = "<group>"; };
 		3D8E2B66247FC92F00B4032B /* UIApplicationExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIApplicationExtension.swift; sourceTree = "<group>"; };
@@ -157,6 +159,7 @@
 				3D8E2B66247FC92F00B4032B /* UIApplicationExtension.swift */,
 				3D8E2B6A247FD26A00B4032B /* DateExtension.swift */,
 				3D8E2B6C247FDBB200B4032B /* UITableViewExtension.swift */,
+				3D89FBAB24869B3600C064E6 /* StringExtension.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -297,6 +300,7 @@
 			files = (
 				3D400513247E758100A8752E /* AppDelegate.swift in Sources */,
 				3D8E2B69247FCC6B00B4032B /* TaskViewModel.swift in Sources */,
+				3D89FBAC24869B3600C064E6 /* StringExtension.swift in Sources */,
 				3D8E2B62247FB41200B4032B /* Util.swift in Sources */,
 				3D8E2B64247FBE3000B4032B /* TaskModel.swift in Sources */,
 				3D400515247E758100A8752E /* SceneDelegate.swift in Sources */,

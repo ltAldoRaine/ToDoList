@@ -10,6 +10,8 @@ import UIKit
 
 class TasksTableViewController: UITableViewController {
 
+    private let searchController = UISearchController(searchResultsController: nil)
+
     private var taskViewModels = TaskViewModel.all() ?? [TaskViewModel]()
     private var taskViewModelsGrouped: [Int: [TaskViewModel]] {
         return [
@@ -18,24 +20,38 @@ class TasksTableViewController: UITableViewController {
             2: taskViewModels.filter { $0.completedState == 2 }
         ]
     }
+    private var filteredTaskViewModelsGrouped = [Int: [TaskViewModel]]()
+    private var visibleTaskViewModelsGrouped: [Int: [TaskViewModel]] {
+        if isFiltering {
+            return filteredTaskViewModelsGrouped
+        }
+        return taskViewModelsGrouped
+    }
+    private var searchBarisEmpty: Bool {
+        return searchController.searchBar.text?.isEmpty ?? true
+    }
+    private var isFiltering: Bool {
+        return searchController.isActive && !searchBarisEmpty
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.register(TaskTableViewCell.nib, forCellReuseIdentifier: TaskTableViewCell.description)
         tableView.register(TasksTableViewHeaderView.nib, forHeaderFooterViewReuseIdentifier: TasksTableViewHeaderView.description)
+        setSearchController()
     }
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return taskViewModelsGrouped.count
+        return visibleTaskViewModelsGrouped.count
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return taskViewModelsGrouped[section]?.count ?? 0
+        return visibleTaskViewModelsGrouped[section]?.count ?? 0
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: TaskTableViewCell.description, for: indexPath) as! TaskTableViewCell
-        let taskViewModel = taskViewModelsGrouped[indexPath.section]?[indexPath.row]
+        let taskViewModel = visibleTaskViewModelsGrouped[indexPath.section]?[indexPath.row]
         cell.taskContentLabel.text = taskViewModel?.content
         cell.taskDateLabel.text = taskViewModel?.date?.toString(format: "yyyy-MM-dd HH:mm")
         return cell
@@ -54,7 +70,7 @@ class TasksTableViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        if taskViewModelsGrouped[section]?.isEmpty == true {
+        if visibleTaskViewModelsGrouped[section]?.isEmpty == true {
             return .zero
         }
         return UITableView.automaticDimension
@@ -63,9 +79,9 @@ class TasksTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let modifyAction1 = UIContextualAction(style: .normal, title: "", handler: { (ac: UIContextualAction, view: UIView, success: (Bool) -> Void) in
             Util.confirm(UIViewController: self, title: Variable.deleteTaskTitle, message: Variable.deleteTaskMessage) {
-                let taskViewModel = self.taskViewModelsGrouped[indexPath.section]?[indexPath.row]
+                let taskViewModel = self.visibleTaskViewModelsGrouped[indexPath.section]?[indexPath.row]
                 taskViewModel?.delete(success: {
-                    self.taskViewModels.removeAll {$0.id == taskViewModel?.id}
+                    self.taskViewModels.removeAll { $0.id == taskViewModel?.id }
                     tableView.reloadData()
                 })
             }
@@ -77,7 +93,7 @@ class TasksTableViewController: UITableViewController {
         if indexPath.section == 0 {
             let modifyAction2 = UIContextualAction(style: .normal, title: "", handler: { (ac: UIContextualAction, view: UIView, success: (Bool) -> Void) in
                 Util.confirm(UIViewController: self, title: Variable.startTaskTitle, message: Variable.startTaskMessage) {
-                    let taskViewModel = self.taskViewModelsGrouped[indexPath.section]?[indexPath.row]
+                    let taskViewModel = self.visibleTaskViewModelsGrouped[indexPath.section]?[indexPath.row]
                     taskViewModel?.completedState = 1
                     taskViewModel?.update(success: {
                         tableView.reloadData()
@@ -93,7 +109,7 @@ class TasksTableViewController: UITableViewController {
         } else if indexPath.section == 1 {
             let modifyAction3 = UIContextualAction(style: .normal, title: "", handler: { (ac: UIContextualAction, view: UIView, success: (Bool) -> Void) in
                 Util.confirm(UIViewController: self, title: Variable.finishTaskTitle, message: Variable.finishTaskMessage) {
-                    let taskViewModel = self.taskViewModelsGrouped[indexPath.section]?[indexPath.row]
+                    let taskViewModel = self.visibleTaskViewModelsGrouped[indexPath.section]?[indexPath.row]
                     taskViewModel?.completedState = 2
                     taskViewModel?.update(success: {
                         tableView.reloadData()
@@ -123,6 +139,43 @@ class TasksTableViewController: UITableViewController {
                 }
             })
         }
+    }
+
+    private func setSearchController() {
+        searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.placeholder = "Search"
+        searchController.searchBar.autocapitalizationType = .none
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        definesPresentationContext = true
+    }
+
+    private func filterContentForSearchText(_ searchText: String) {
+        resetFilter()
+        filteredTaskViewModelsGrouped = taskViewModelsGrouped.mapValues { element in
+            element.filter { (task) -> Bool in
+                return task.content?.contains(searchText) ?? false
+            }
+        }
+//        print("DEBUG \(filteredTaskViewModelsGrouped.count)")
+//        print("DEBUG \(filteredTaskViewModelsGrouped)")
+        tableView.reloadData()
+    }
+
+    private func resetFilter() {
+        filteredTaskViewModelsGrouped.removeAll()
+    }
+
+}
+
+extension TasksTableViewController: UISearchResultsUpdating {
+
+    func updateSearchResults(for searchController: UISearchController) {
+        guard let text = searchController.searchBar.text else {
+            return
+        }
+        filterContentForSearchText(text)
     }
 
 }
